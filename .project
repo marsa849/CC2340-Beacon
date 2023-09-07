@@ -175,15 +175,5 @@
 			<type>1</type>
 			<locationURI>COM_TI_SIMPLELINK_LOWPOWER_F3_SDK_INSTALL_DIR/source/ti/bleapp/profiles/simple_gatt/simple_gatt_profile.h</locationURI>
 		</link>
-		<link>
-			<name>common/Services/dev_info/dev_info_service.c</name>
-			<type>1</type>
-			<locationURI>COM_TI_SIMPLELINK_LOWPOWER_F3_SDK_INSTALL_DIR/source/ti/bleapp/services/dev_info/dev_info_service.c</locationURI>
-		</link>
-		<link>
-			<name>common/Services/dev_info/dev_info_service.h</name>
-			<type>1</type>
-			<locationURI>COM_TI_SIMPLELINK_LOWPOWER_F3_SDK_INSTALL_DIR/source/ti/bleapp/services/dev_info/dev_info_service.h</locationURI>
-		</link>
 	</linkedResources>
 </projectDescription>
