@@ -53,6 +53,25 @@ BLEAppUtil_PeriCentParams_t appMainPeriCentParams;
 #endif //#if defined( HOST_CONFIG ) && ( HOST_CONFIG & ( PERIPHERAL_CFG | CENTRAL_CFG ) )
 
 
+uint8 madvData[30]={0x02,0x01,0x24,0x1a,0xff,
+                    0x4c,0x00,0x02,0x15,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x00,0x00,
+                    0x00,0x00,
+                    0xb5};
+uint8 mrspData[26]={0x03,0x03,
+                    0xf0,0xff,
+                    0x0a,0x09,
+                    'B','e','e','L','i','n','k','e','r',
+                    0x0a,0x16,
+                    0x00,0x00,
+                    0x00,0x00,
+                    0x00,0x00,
+                    0x68,0x01,
+                    0x14};
+uint16 adv_interval;
+int8 tx_power;
 
 //*****************************************************************************
 //! Functions
@@ -91,6 +110,8 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
 {
     bStatus_t status = SUCCESS;
 
+    adv_interval = 160*3;
+    tx_power = 8;
     // Menu
     Menu_start();
 

@@ -52,6 +52,11 @@ void Peripheral_GAPConnEventHandler(uint32 event, BLEAppUtil_msgHdr_t *pMsgData)
 //! Globals
 //*****************************************************************************
 
+extern uint8 madvData[];
+extern uint8 mrspData[];
+extern uint16 adv_interval;
+extern int8 tx_power;
+
 BLEAppUtil_EventHandler_t peripheralConnHandler =
 {
     .handlerType    = BLEAPPUTIL_GAP_CONN_TYPE,
@@ -76,12 +81,12 @@ uint8 peripheralAdvHandle_1;
 const BLEAppUtil_AdvInit_t advSetInitParamsSet_1 =
 {
     /* Advertise data and length */
-    .advDataLen        = sizeof(advData1),
-    .advData           = advData1,
+    .advDataLen        = 30,
+    .advData           = madvData,
 
     /* Scan respond data and length */
-    .scanRespDataLen   = sizeof(scanResData1),
-    .scanRespData      = scanResData1,
+    .scanRespDataLen   = 26,
+    .scanRespData      = mrspData,
 
     .advParam          = &advParams1
 };
@@ -209,7 +214,10 @@ bStatus_t Peripheral_start()
         return(status);
     }
 
+    advSetInitParamsSet_1.advParam->primIntMin = adv_interval;
+    advSetInitParamsSet_1.advParam->primIntMax = adv_interval;
     status = BLEAppUtil_initAdvSet(&peripheralAdvHandle_1, &advSetInitParamsSet_1);
+    HCI_EXT_SetTxPowerDbmCmd(tx_power,0);
     if(status != SUCCESS)
     {
         // Return status value
