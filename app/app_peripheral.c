@@ -78,7 +78,7 @@ BLEAppUtil_EventHandler_t peripheralAdvHandler =
 uint8 peripheralAdvHandle_1;
 
 //! Advertise param, needed for each advertise set, Generate by Sysconfig
-const BLEAppUtil_AdvInit_t advSetInitParamsSet_1 =
+BLEAppUtil_AdvInit_t advSetInitParamsSet_1 =
 {
     /* Advertise data and length */
     .advDataLen        = 30,
@@ -216,6 +216,7 @@ bStatus_t Peripheral_start()
 
     advSetInitParamsSet_1.advParam->primIntMin = adv_interval;
     advSetInitParamsSet_1.advParam->primIntMax = adv_interval;
+    advSetInitParamsSet_1.scanRespDataLen = mrspData[4] + 16;
     status = BLEAppUtil_initAdvSet(&peripheralAdvHandle_1, &advSetInitParamsSet_1);
     HCI_EXT_SetTxPowerDbmCmd(tx_power,0);
     if(status != SUCCESS)

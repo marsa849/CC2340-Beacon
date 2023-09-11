@@ -53,23 +53,30 @@ BLEAppUtil_PeriCentParams_t appMainPeriCentParams;
 #endif //#if defined( HOST_CONFIG ) && ( HOST_CONFIG & ( PERIPHERAL_CFG | CENTRAL_CFG ) )
 
 
+
+#define FLASH_LEN 46 // len store beacon param
+
+#define FLASH_UUID                          0xfd, 0xa5, 0x06, 0x93, 0xa4, 0xe2, 0x4f, 0xb1, \
+                                            0xaf, 0xcf, 0xc6, 0xeb, 0x07, 0x64, 0x78, 0x25,
+#define FLASH_TXPOWER                       0x6,
+#define FLASH_MAJOR                         0x27, 0x11,
+#define FLASH_MINOR                         0x00, 0x01,
+#define FLASH_ADVINT                        10,
+#define FLASH_RXP                           0xc5,
+#define FLASH_PASSWORD                      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+#define FLASH_NAME                          'B','e','e','L','i','n','k','e','r','0','0','0','0','0',
+#define FLASH_NAMELEN                       9
+
+uint8 storage[FLASH_LEN] = {FLASH_UUID FLASH_TXPOWER FLASH_MAJOR FLASH_MINOR FLASH_ADVINT FLASH_RXP FLASH_PASSWORD FLASH_NAME FLASH_NAMELEN};
+
 uint8 madvData[30]={0x02,0x01,0x24,0x1a,0xff,
                     0x4c,0x00,0x02,0x15,
                     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                     0x00,0x00,
                     0x00,0x00,
-                    0xb5};
-uint8 mrspData[26]={0x03,0x03,
-                    0xf0,0xff,
-                    0x0a,0x09,
-                    'B','e','e','L','i','n','k','e','r',
-                    0x0a,0x16,
-                    0x00,0x00,
-                    0x00,0x00,
-                    0x00,0x00,
-                    0x68,0x01,
-                    0x14};
+                    0x00};
+uint8 mrspData[31]={0x03,0x03,0xf0,0xff};
 uint16 adv_interval;
 int8 tx_power;
 
@@ -97,6 +104,28 @@ void criticalErrorHandler(int32 errorCode , void* pInfo)
 
 }
 
+void set_param(void)
+{
+    memcpy(madvData+9,storage,16);              //adv uuid
+    tx_power = 8;                               //temporary setting,need remap by storage[16]
+    memcpy(madvData+25,storage+17,2);           //adv major
+    memcpy(madvData+27,storage+19,2);           //adv minor
+    adv_interval = 160*3;                       //temporary setting,need remap by storage[21]
+    madvData[29] = storage[22];                 //adv rxp
+
+    mrspData[4] = storage[45]+1;                  //rsp name len
+    mrspData[5] = 0x09;
+    memcpy(mrspData+6,storage+31,storage[45]);  //rsp name
+    mrspData[6+storage[45]] = 0x0a;
+    mrspData[7+storage[45]] = 0x16;
+    memcpy(mrspData+8+storage[45],storage+14,2);//rsp uuid
+    memcpy(mrspData+10+storage[45],storage+17,2);//rsp major
+    memcpy(mrspData+12+storage[45],storage+19,2);//rsp minor
+
+    mrspData[14+storage[45]] = 0x68;            //temporary setting, battery
+    mrspData[15+storage[45]] = 0x01;            //temporary setting, battery
+    mrspData[16+storage[45]] = 0x01;            //temporary setting, device id
+}
 /*********************************************************************
  * @fn      App_StackInitDone
  *
@@ -110,8 +139,8 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
 {
     bStatus_t status = SUCCESS;
 
-    adv_interval = 160*3;
-    tx_power = 8;
+    set_param();
+
     // Menu
     Menu_start();
 
