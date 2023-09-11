@@ -49,7 +49,7 @@ extern "C"
 #define DEVINFO_11073_BODY_EXP            254
 
 // System ID length
-#define DEVINFO_SYSTEM_ID_LEN             8
+#define DEVINFO_SYSTEM_ID_LEN             6
 
 // PnP ID length
 #define DEVINFO_PNP_ID_LEN                7

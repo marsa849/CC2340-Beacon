@@ -24,7 +24,7 @@
 /* This Header file contains all BLE API and icall structure definition */
 #include "icall_ble_api.h"
 
-#include <ti/bleapp/services/dev_info/dev_info_service.h>
+#include "common/Services/dev_info/dev_info_service.h"
 /*********************************************************************
  * MACROS
  */
@@ -58,8 +58,8 @@ GATT_BT_UUID(devInfoFirmwareRevUUID, FIRMWARE_REV_UUID);
 // Hardware Revision String
 GATT_BT_UUID(devInfoHardwareRevUUID, HARDWARE_REV_UUID);
 
-// Software Revision String
-GATT_BT_UUID(devInfoSoftwareRevUUID, SOFTWARE_REV_UUID);
+// Current Time String
+GATT_BT_UUID(devInfoSoftwareRevUUID, CURRENT_TIME_UUID);
 
 // Manufacturer Name String
 GATT_BT_UUID(devInfoMfrNameUUID, MANUFACTURER_NAME_UUID);
@@ -91,27 +91,27 @@ static CONST gattAttrType_t devInfoService = GATT_ATT_BT_UUID_TYPE(devInfoServUU
 
 // System ID characteristic
 static uint8 devInfoSystemIdProps = GATT_PROP_READ;
-static uint8 devInfoSystemId[DEVINFO_SYSTEM_ID_LEN] = {0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 devInfoSystemId[DEVINFO_SYSTEM_ID_LEN] = {0, 0, 0, 0, 0, 0};
 
 // Model Number String characteristic
 static uint8 devInfoModelNumberProps = GATT_PROP_READ;
-static uint8 devInfoModelNumber[DEVINFO_STR_ATTR_LEN+1] = "Model Number";
+uint8 devInfoModelNumber[11] = "2019-01-01";
 
 // Serial Number String characteristic
 static uint8 devInfoSerialNumberProps = GATT_PROP_READ;
-static uint8 devInfoSerialNumber[DEVINFO_STR_ATTR_LEN+1] = "Serial Number";
+uint8 devInfoSerialNumber[13] = "a02c2f151b15";
 
 // Firmware Revision String characteristic
 static uint8 devInfoFirmwareRevProps = GATT_PROP_READ;
-static uint8 devInfoFirmwareRev[DEVINFO_STR_ATTR_LEN+1] = "Firmware Revision";
+uint8 devInfoFirmwareRev[15] = "FMVERSION_1000";
 
 // Hardware Revision String characteristic
 static uint8 devInfoHardwareRevProps = GATT_PROP_READ;
-static uint8 devInfoHardwareRev[DEVINFO_STR_ATTR_LEN+1] = "Hardware Revision";
+uint8 devInfoHardwareRev[15] = "HWVERSION_1000";
 
 // Software Revision String characteristic
 static uint8 devInfoSoftwareRevProps = GATT_PROP_READ;
-static uint8 devInfoSoftwareRev[DEVINFO_STR_ATTR_LEN+1] = "Software Revision";
+uint8 devInfoSoftwareRev[11] = "2019-01-01";
 
 // Manufacturer Name String characteristic
 static uint8 devInfoMfrNameProps = GATT_PROP_READ;
@@ -182,20 +182,6 @@ static gattAttribute_t devInfoAttrTbl[] =
   // Software Revision Value
   GATT_BT_ATT( devInfoSoftwareRevUUID,      GATT_PERMIT_READ,       (uint8 *) devInfoSoftwareRev ),
 
-  // Manufacturer Name String Declaration
-  GATT_BT_ATT( characterUUID,               GATT_PERMIT_READ,       &devInfoMfrNameProps ),
-  // Manufacturer Name Value
-  GATT_BT_ATT( devInfoMfrNameUUID,          GATT_PERMIT_READ,       (uint8 *) devInfoMfrName ),
-
-  // IEEE 11073-20601 Regulatory Certification Data List Declaration
-  GATT_BT_ATT( characterUUID,               GATT_PERMIT_READ,       &devInfo11073CertProps ),
-  // IEEE 11073-20601 Regulatory Certification Data List Value
-  GATT_BT_ATT( devInfo11073CertUUID,        GATT_PERMIT_READ,       defaultDevInfo11073Cert ),
-
-  // PnP ID Declaration
-  GATT_BT_ATT( characterUUID,               GATT_PERMIT_READ,       &devInfoPnpIdProps ),
-  // PnP ID Value
-  GATT_BT_ATT( devInfoPnpIdUUID,            GATT_PERMIT_READ,       (uint8 *) devInfoPnpId )
 };
 
 
@@ -285,7 +271,7 @@ bStatus_t DevInfo_setParameter( uint8 param, uint8 len, void *value )
       // verify length, leave room for null-terminate char
       if (len <= DEVINFO_STR_ATTR_LEN)
       {
-        memset(devInfoModelNumber, 0, DEVINFO_STR_ATTR_LEN+1);
+        memset(devInfoModelNumber, 0, 11);
         memcpy(devInfoModelNumber, value, len);
       }
       else
@@ -297,7 +283,7 @@ bStatus_t DevInfo_setParameter( uint8 param, uint8 len, void *value )
       // verify length, leave room for null-terminate char
       if (len <= DEVINFO_STR_ATTR_LEN)
       {
-        memset(devInfoSerialNumber, 0, DEVINFO_STR_ATTR_LEN+1);
+        memset(devInfoSerialNumber, 0, 13);
         memcpy(devInfoSerialNumber, value, len);
       }
       else
@@ -310,7 +296,7 @@ bStatus_t DevInfo_setParameter( uint8 param, uint8 len, void *value )
       // verify length, leave room for null-terminate char
       if (len <= DEVINFO_STR_ATTR_LEN)
       {
-        memset(devInfoFirmwareRev, 0, DEVINFO_STR_ATTR_LEN+1);
+        memset(devInfoFirmwareRev, 0, 15);
         memcpy(devInfoFirmwareRev, value, len);
       }
       else
@@ -323,7 +309,7 @@ bStatus_t DevInfo_setParameter( uint8 param, uint8 len, void *value )
       // verify length, leave room for null-terminate char
       if (len <= DEVINFO_STR_ATTR_LEN)
       {
-        memset(devInfoHardwareRev, 0, DEVINFO_STR_ATTR_LEN+1);
+        memset(devInfoHardwareRev, 0, 15);
         memcpy(devInfoHardwareRev, value, len);
       }
       else
@@ -336,59 +322,8 @@ bStatus_t DevInfo_setParameter( uint8 param, uint8 len, void *value )
       // verify length, leave room for null-terminate char
       if (len <= DEVINFO_STR_ATTR_LEN)
       {
-        memset(devInfoSoftwareRev, 0, DEVINFO_STR_ATTR_LEN+1);
+        memset(devInfoSoftwareRev, 0, 11);
         memcpy(devInfoSoftwareRev, value, len);
-      }
-      else
-      {
-        ret = bleInvalidRange;
-      }
-      break;
-
-    case DEVINFO_MANUFACTURER_NAME:
-      // verify length, leave room for null-terminate char
-      if (len <= DEVINFO_STR_ATTR_LEN)
-      {
-        memset(devInfoMfrName, 0, DEVINFO_STR_ATTR_LEN+1);
-        memcpy(devInfoMfrName, value, len);
-      }
-      else
-      {
-        ret = bleInvalidRange;
-      }
-      break;
-
-    case DEVINFO_11073_CERT_DATA:
-      {
-        // Allocate buffer for new certification
-        uint8 *pCert = ICall_malloc(len);
-        if (pCert != NULL)
-        {
-          if (devInfo11073Cert != defaultDevInfo11073Cert)
-          {
-            // Free existing certification buffer
-            ICall_free(devInfo11073Cert);
-          }
-
-          // Copy over new certification
-          memcpy(pCert, value, len);
-
-          // Update our globals
-          devInfo11073Cert = pCert;
-          devInfo11073CertLen = len;
-        }
-        else
-        {
-          ret = bleMemAllocError;
-        }
-      }
-      break;
-
-    case DEVINFO_PNP_ID:
-      // verify length
-      if (len == sizeof(devInfoPnpId))
-      {
-        memcpy(devInfoPnpId, value, len);
       }
       else
       {
@@ -510,61 +445,26 @@ static bStatus_t DevInfo_readAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       break;
 
     case MODEL_NUMBER_UUID:
+        *pLen = 11;
+        memcpy(pValue, devInfoModelNumber, 11);
+        break;
     case SERIAL_NUMBER_UUID:
+        *pLen = 13;
+        memcpy(pValue, devInfoSerialNumber, 13);
+        break;
     case FIRMWARE_REV_UUID:
+        *pLen = 15;
+        memcpy(pValue, devInfoFirmwareRev, 15);
+        break;
     case HARDWARE_REV_UUID:
-    case SOFTWARE_REV_UUID:
-    case MANUFACTURER_NAME_UUID:
-      {
-        uint16 len = strlen((char *)(pAttr->pValue));
+        *pLen = 15;
+        memcpy(pValue, devInfoHardwareRev, 15);
+        break;
+    case CURRENT_TIME_UUID:
+        *pLen = 11;
+        memcpy(pValue, devInfoSoftwareRev, 11);
+        break;
 
-        // verify offset
-        if (offset > len)
-        {
-          status = ATT_ERR_INVALID_OFFSET;
-        }
-        else
-        {
-          // determine read length (exclude null terminating character)
-          *pLen = MIN(maxLen, (len - offset));
-
-          // copy data
-          memcpy(pValue, &(pAttr->pValue[offset]), *pLen);
-        }
-      }
-      break;
-
-    case IEEE_11073_CERT_DATA_UUID:
-      // verify offset
-      if (offset > devInfo11073CertLen)
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length
-        *pLen = MIN(maxLen, (devInfo11073CertLen - offset));
-
-        // copy data
-        memcpy(pValue, &devInfo11073Cert[offset], *pLen);
-      }
-      break;
-
-    case PNP_ID_UUID:
-      // verify offset
-      if (offset > sizeof(devInfoPnpId))
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length
-        *pLen = MIN(maxLen, (sizeof(devInfoPnpId) - offset));
-
-        // copy data
-        memcpy(pValue, &devInfoPnpId[offset], *pLen);
-      }
-      break;
 
     default:
       *pLen = 0;

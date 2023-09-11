@@ -19,7 +19,7 @@ $Release Date: PACKAGE RELEASE DATE $
 //*****************************************************************************
 #include <string.h>
 #include <ti/bleapp/ble_app_util/inc/bleapputil_api.h>
-#include <ti/bleapp/services/dev_info/dev_info_service.h>
+#include "common/Services/dev_info/dev_info_service.h"
 
 //*****************************************************************************
 //! Defines
@@ -58,9 +58,8 @@ bStatus_t DevInfo_start(void)
 
   devAddr = GAP_GetDevAddress( TRUE );
 
-  memcpy( &systemId[0], &devAddr[0], 3 );   // use 6 bytes of device address for 8 bytes of system ID value
-  memset( &systemId[3], 0xFFFE, 2 );        // set middle bytes to 0xFFFE
-  memcpy( &systemId[5], &devAddr[3], 3 );   // shift three bytes up
+  memcpy( &systemId[0], &devAddr[0], 6 );   // use 6 bytes of device address for 6 bytes of system ID value
+
 
   // Set Device Info Service System ID Parameter
   status = DevInfo_setParameter( DEVINFO_SYSTEM_ID, DEVINFO_SYSTEM_ID_LEN, systemId );
