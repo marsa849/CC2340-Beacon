@@ -165,15 +165,5 @@
 			<type>1</type>
 			<locationURI>COM_TI_SIMPLELINK_LOWPOWER_F3_SDK_INSTALL_DIR/source/ti/common/nv/nvocmp.h</locationURI>
 		</link>
-		<link>
-			<name>common/Profiles/simple_gatt/simple_gatt_profile.c</name>
-			<type>1</type>
-			<locationURI>COM_TI_SIMPLELINK_LOWPOWER_F3_SDK_INSTALL_DIR/source/ti/bleapp/profiles/simple_gatt/simple_gatt_profile.c</locationURI>
-		</link>
-		<link>
-			<name>common/Profiles/simple_gatt/simple_gatt_profile.h</name>
-			<type>1</type>
-			<locationURI>COM_TI_SIMPLELINK_LOWPOWER_F3_SDK_INSTALL_DIR/source/ti/bleapp/profiles/simple_gatt/simple_gatt_profile.h</locationURI>
-		</link>
 	</linkedResources>
 </projectDescription>
