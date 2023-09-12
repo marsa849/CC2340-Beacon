@@ -27,6 +27,14 @@ $Release Date: PACKAGE RELEASE DATE $
 #include <ti/bleapp/menu_module/menu_module.h>
 #include <app_main.h>
 
+#include <icall_ble_api.h>
+
+#include DeviceFamily_constructPath(inc/hw_memmap.h)
+#include DeviceFamily_constructPath(inc/hw_pmctl.h)
+
+#define SystemReset()        __disable_irq();  HWREG(PMCTL_BASE + PMCTL_O_RSTCTL) |= PMCTL_RSTCTL_SYSRST_SET;  while (1) {}
+
+extern uint8 storage[];
 //*****************************************************************************
 //! Prototypes
 //*****************************************************************************
@@ -117,11 +125,13 @@ void Connection_ConnEventHandler(uint32 event, BLEAppUtil_msgHdr_t *pMsgData)
                               "reason = " MENU_MODULE_COLOR_YELLOW "%d" MENU_MODULE_COLOR_RESET,
                               gapTermMsg->connectionHandle, gapTermMsg->reason);
 
+            osal_snv_write(0x100, 46, (uint8 *)storage);
+
             /*! Print the number of current connections */
             MenuModule_printf(APP_MENU_NUM_CONNS, 0, "Connections number: "
                               MENU_MODULE_COLOR_YELLOW "%d " MENU_MODULE_COLOR_RESET,
                               linkDB_NumActive());
-
+            SystemReset();
             break;
         }
 

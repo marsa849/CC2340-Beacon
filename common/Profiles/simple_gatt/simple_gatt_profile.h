@@ -46,12 +46,15 @@ extern "C"
 #define SIMPLEGATTPROFILE_CHAR3_UUID            0xFFF3
 #define SIMPLEGATTPROFILE_CHAR4_UUID            0xFFF4
 #define SIMPLEGATTPROFILE_CHAR5_UUID            0xFFF5
+#define SIMPLEGATTPROFILE_CHAR6_UUID            0xFFF6
+#define SIMPLEGATTPROFILE_CHAR7_UUID            0xFFF7
+#define SIMPLEGATTPROFILE_CHAR8_UUID            0xFFF8
+#define SIMPLEGATTPROFILE_CHAR9_UUID            0xFFF9
+#define SIMPLEGATTPROFILE_CHAR10_UUID           0xFF60
 
 // Simple Keys Profile Services bit fields
 #define SIMPLEGATTPROFILE_SERVICE               0x00000001
 
-// Length of Characteristic 5 in bytes
-#define SIMPLEGATTPROFILE_CHAR5_LEN           5
 
 /*********************************************************************
  * TYPEDEFS
@@ -60,6 +63,17 @@ extern "C"
 /*********************************************************************
  * MACROS
  */
+
+#define SIMPLEGATTPROFILE_CHAR1_LEN 2
+#define SIMPLEGATTPROFILE_CHAR2_LEN 16
+#define SIMPLEGATTPROFILE_CHAR3_LEN 1
+#define SIMPLEGATTPROFILE_CHAR4_LEN 2
+#define SIMPLEGATTPROFILE_CHAR5_LEN 2
+#define SIMPLEGATTPROFILE_CHAR6_LEN 2
+#define SIMPLEGATTPROFILE_CHAR7_LEN 1
+#define SIMPLEGATTPROFILE_CHAR8_LEN 8
+#define SIMPLEGATTPROFILE_CHAR9_LEN 14
+#define SIMPLEGATTPROFILE_CHAR10_LEN 1
 
 /*********************************************************************
  * Profile Callbacks
