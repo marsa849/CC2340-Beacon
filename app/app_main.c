@@ -54,6 +54,35 @@ BLEAppUtil_PeriCentParams_t appMainPeriCentParams =
 BLEAppUtil_PeriCentParams_t appMainPeriCentParams;
 #endif //#if defined( HOST_CONFIG ) && ( HOST_CONFIG & ( PERIPHERAL_CFG | CENTRAL_CFG ) )
 
+
+typedef enum
+{
+    ADV_INT_875MS = 1,
+    ADV_INT_500MS = 2,
+    ADV_INT_300MS = 3,
+    ADV_INT_250MS = 4,
+    ADV_INT_200MS = 5,
+    ADV_INT_100MS = 10,
+    ADV_INT_50MS = 20,
+    ADV_INT_30MS = 30,
+    ADV_INT_20MS = 50,
+    ADV_INT_1000MS = 21,
+    ADV_INT_2000MS = 22
+} AdvInt;
+
+typedef enum
+{
+    TX_POWER_NEGATIVE_20 = 0,
+    TX_POWER_NEGATIVE_16 = 1,
+    TX_POWER_NEGATIVE_12 = 2,
+    TX_POWER_NEGATIVE_8 = 3,
+    TX_POWER_NEGATIVE_4 = 4,
+    TX_POWER_NEGATIVE_2 = 5,
+    TX_POWER_0 = 6,
+    TX_POWER_4 = 7,
+    TX_POWER_8 = 8
+} AdvPwr;
+
 #define SNV_ID_APP 0x100
 
 #define FLASH_LEN 46 // len store beacon param
@@ -63,7 +92,7 @@ BLEAppUtil_PeriCentParams_t appMainPeriCentParams;
 #define FLASH_TXPOWER                       0x6,
 #define FLASH_MAJOR                         0x27, 0x11,
 #define FLASH_MINOR                         0x00, 0x01,
-#define FLASH_ADVINT                        10,
+#define FLASH_ADVINT                        ADV_INT_300MS,
 #define FLASH_RXP                           0xc5,
 #define FLASH_PASSWORD                      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 #define FLASH_NAME                          'B','e','e','L','i','n','k','e','r','0','0','0','0','0',
@@ -81,6 +110,7 @@ uint8 madvData[30]={0x02,0x01,0x24,0x1a,0xff,
 uint8 mrspData[31]={0x03,0x03,0xf0,0xff};
 uint16 adv_interval;
 int8 tx_power;
+
 
 //*****************************************************************************
 //! Functions
@@ -106,13 +136,96 @@ void criticalErrorHandler(int32 errorCode , void* pInfo)
 
 }
 
+static int8_t get_tx_pwr(uint8_t index)
+{
+    int8_t m_tx_pwr;
+    switch (index)
+    {
+    case TX_POWER_NEGATIVE_20:
+        m_tx_pwr = -20;
+        break;
+    case TX_POWER_NEGATIVE_16:
+        m_tx_pwr = -16;
+        break;
+    case TX_POWER_NEGATIVE_12:
+        m_tx_pwr = -12;
+        break;
+    case TX_POWER_NEGATIVE_8:
+        m_tx_pwr = -8;
+        break;
+    case TX_POWER_NEGATIVE_4:
+        m_tx_pwr = -4;
+        break;
+    case TX_POWER_NEGATIVE_2:
+        m_tx_pwr = 0;
+        break;
+    case TX_POWER_0:
+        m_tx_pwr = 0;
+        break;
+    case TX_POWER_4:
+        m_tx_pwr = 4;
+        break;
+    case TX_POWER_8:
+        m_tx_pwr = 8;
+        break;
+
+        default:
+        break;
+    }
+    return m_tx_pwr;
+}
+
+static uint16_t get_adv_int(uint8_t index)
+{
+    uint16_t m_adv_int=0;
+    switch (index)
+    {
+    case ADV_INT_875MS:
+        m_adv_int = 875;
+        break;
+    case ADV_INT_500MS:
+        m_adv_int = 500;
+        break;
+    case ADV_INT_300MS:
+        m_adv_int = 300;
+        break;
+    case ADV_INT_250MS:
+        m_adv_int = 250;
+        break;
+    case ADV_INT_200MS:
+        m_adv_int = 200;
+        break;
+    case ADV_INT_100MS:
+        m_adv_int = 100;
+        break;
+    case ADV_INT_50MS:
+        m_adv_int = 50;
+        break;
+    case ADV_INT_30MS:
+        m_adv_int = 30;
+        break;
+    case ADV_INT_20MS:
+        m_adv_int = 20;
+        break;
+    case ADV_INT_1000MS:
+        m_adv_int = 1000;
+        break;
+    case ADV_INT_2000MS:
+        m_adv_int = 2000;
+        break;
+        default:
+        break;
+    }
+    return (m_adv_int*1000/625);
+}
+
 void set_param(void)
 {
     memcpy(madvData+9,storage,16);              //adv uuid
-    tx_power = 8;                               //temporary setting,need remap by storage[16]
+    tx_power = get_tx_pwr(storage[16]);         //tx power
     memcpy(madvData+25,storage+17,2);           //adv major
     memcpy(madvData+27,storage+19,2);           //adv minor
-    adv_interval = 160*3;                       //temporary setting,need remap by storage[21]
+    adv_interval = get_adv_int(storage[21]);    //adv interval
     madvData[29] = storage[22];                 //adv rxp
 
     mrspData[4] = storage[45]+1;                  //rsp name len
@@ -126,7 +239,7 @@ void set_param(void)
 
     mrspData[14+storage[45]] = 0x68;            //temporary setting, battery
     mrspData[15+storage[45]] = 0x01;            //temporary setting, battery
-    mrspData[16+storage[45]] = 0x01;            //temporary setting, device id
+    mrspData[16+storage[45]] = 0x16;            //temporary setting, device id
 }
 /*********************************************************************
  * @fn      App_StackInitDone
