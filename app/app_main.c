@@ -22,6 +22,8 @@ $Release Date: PACKAGE RELEASE DATE $
 #include <ti/bleapp/menu_module/menu_module.h>
 #include <app_main.h>
 
+#include <icall_ble_api.h>
+#include <string.h>
 //*****************************************************************************
 //! Defines
 //*****************************************************************************
@@ -52,7 +54,7 @@ BLEAppUtil_PeriCentParams_t appMainPeriCentParams =
 BLEAppUtil_PeriCentParams_t appMainPeriCentParams;
 #endif //#if defined( HOST_CONFIG ) && ( HOST_CONFIG & ( PERIPHERAL_CFG | CENTRAL_CFG ) )
 
-
+#define SNV_ID_APP 0x100
 
 #define FLASH_LEN 46 // len store beacon param
 
@@ -138,6 +140,12 @@ void set_param(void)
 void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
 {
     bStatus_t status = SUCCESS;
+
+    status = osal_snv_read(SNV_ID_APP, FLASH_LEN, (uint8 *)storage);
+    if(status != SUCCESS)
+    {
+        osal_snv_write(SNV_ID_APP, FLASH_LEN, (uint8 *)storage);
+    }
 
     set_param();
 
