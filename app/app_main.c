@@ -289,6 +289,10 @@ uint16 adc_get(void)                            //unit: Centivolt
     vol = ADC_convertToMicroVolts(adcHandle, result_sum/6);
     vol=vol*3/10000;
     ADC_close(adcHandle);
+    if(vol>360)
+        vol=360;
+    if(vol<260)
+        vol=260;
     return (uint16)vol;
 }
 
