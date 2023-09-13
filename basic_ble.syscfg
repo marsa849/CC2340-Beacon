@@ -13,6 +13,8 @@ const ble         = scripting.addModule("/ti/ble5stack/ble");
 const CCFG        = scripting.addModule("/ti/devices/CCFG");
 const Display     = scripting.addModule("/ti/display/Display");
 const Display1    = Display.addInstance();
+const ADC         = scripting.addModule("/ti/drivers/ADC", {}, false);
+const ADC1        = ADC.addInstance();
 const AESCCM      = scripting.addModule("/ti/drivers/AESCCM");
 const AESCCM1     = AESCCM.addInstance();
 const AESCTRDRBG  = scripting.addModule("/ti/drivers/AESCTRDRBG");
@@ -57,14 +59,18 @@ ble.advSet1.scanRes1.GAP_ADTYPE_PERIPHERAL_CONN_INTERVAL_RANGE = true;
 
 CCFG.ccfgTemplate.$name = "ti_devices_CCFG_CCFGCC23X0Template0";
 
-Display1.$name                                 = "CONFIG_Display_0";
-Display1.$hardware                             = system.deviceData.board.components.XDS110UART;
-Display1.enableANSI                            = true;
-Display1.uartBufferSize                        = 128;
-Display1.uart.$name                            = "CONFIG_DISPLAY_UART";
-Display1.uart.txPinInstance.initialOutputState = "High";
-Display1.uart.txPinInstance.$name              = "CONFIG_PIN_UART_TX";
-Display1.uart.rxPinInstance.$name              = "CONFIG_PIN_UART_RX";
+Display1.$name                    = "CONFIG_Display_0";
+Display1.$hardware                = system.deviceData.board.components.XDS110UART;
+Display1.enableANSI               = true;
+Display1.uartBufferSize           = 128;
+Display1.uart.$name               = "CONFIG_DISPLAY_UART";
+Display1.uart.txPinInstance.$name = "CONFIG_PIN_UART_TX";
+Display1.uart.rxPinInstance.$name = "CONFIG_PIN_UART_RX";
+
+ADC1.$name             = "CONFIG_ADC_0";
+ADC1.internalSignal    = "Battery Channel";
+ADC1.referenceSource   = "Internal 1.4V";
+ADC1.adjustSampleValue = true;
 
 AESCCM1.$name = "CONFIG_AESCCM0";
 

@@ -45,6 +45,7 @@ void SimpleGattProfile_invokeFromFWContext( char *pData );
  */
 
 extern uint8 storage[];
+extern uint16 battery_vol;
 
 // Simple GATT Profile Service UUID: 0xFFF0
 GATT_BT_UUID(simpleGattProfile_ServUUID, SIMPLEGATTPROFILE_SERV_UUID);
@@ -379,6 +380,8 @@ bStatus_t SimpleGattProfile_readAttrCB(uint16_t connHandle,
 
         case SIMPLEGATTPROFILE_CHAR4_UUID:
             *pLen = SIMPLEGATTPROFILE_CHAR4_LEN;
+            simpleGattProfile_Char4[0] = battery_vol%256;
+            simpleGattProfile_Char4[1] = battery_vol/256;
             memcpy(pValue,simpleGattProfile_Char4,SIMPLEGATTPROFILE_CHAR4_LEN);
             break;
 

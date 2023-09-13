@@ -22,6 +22,7 @@ $Release Date: PACKAGE RELEASE DATE $
 #include <ti/bleapp/menu_module/menu_module.h>
 #include <app_main.h>
 
+#include <ti/drivers/ADC.h>
 #include <icall_ble_api.h>
 #include <string.h>
 //*****************************************************************************
@@ -109,6 +110,7 @@ uint8 madvData[30]={0x02,0x01,0x24,0x1a,0xff,
                     0x00};
 uint8 mrspData[31]={0x03,0x03,0xf0,0xff};
 uint16 adv_interval;
+uint16 battery_vol;
 int8 tx_power;
 
 
@@ -237,9 +239,31 @@ void set_param(void)
     memcpy(mrspData+10+storage[45],storage+17,2);//rsp major
     memcpy(mrspData+12+storage[45],storage+19,2);//rsp minor
 
-    mrspData[14+storage[45]] = 0x68;            //temporary setting, battery
-    mrspData[15+storage[45]] = 0x01;            //temporary setting, battery
+    mrspData[14+storage[45]] = battery_vol%256;            //battery
+    mrspData[15+storage[45]] = battery_vol/256;            //battery
     mrspData[16+storage[45]] = 0x16;            //temporary setting, device id
+}
+
+uint16 adc_get(void)                            //unit: Centivolt
+{
+    uint16 result;
+    uint32 result_sum=0;
+    uint32 vol=0;
+
+    ADC_init();
+    ADC_Params params;
+    ADC_Params_init(&params);
+    params.isProtected = true;
+    ADC_Handle adcHandle = ADC_open(0, &params);
+    for(int i=0;i<6;i++)
+    {
+        ADC_convert(adcHandle, &result);
+        result_sum += result;
+    }
+    vol = ADC_convertToMicroVolts(adcHandle, result_sum/6);
+    vol=vol*3/10000;
+    ADC_close(adcHandle);
+    return (uint16)vol;
 }
 /*********************************************************************
  * @fn      App_StackInitDone
@@ -260,6 +284,7 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
         osal_snv_write(SNV_ID_APP, FLASH_LEN, (uint8 *)storage);
     }
 
+    battery_vol = adc_get();
     set_param();
 
     // Menu
