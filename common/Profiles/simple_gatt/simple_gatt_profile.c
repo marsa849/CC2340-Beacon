@@ -469,28 +469,38 @@ bStatus_t SimpleGattProfile_writeAttrCB( uint16_t connHandle,
           }
           break;
       case SIMPLEGATTPROFILE_CHAR2_UUID:
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage,pValue,SIMPLEGATTPROFILE_CHAR2_LEN);
           break;
       case SIMPLEGATTPROFILE_CHAR3_UUID:
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage+16,pValue,SIMPLEGATTPROFILE_CHAR3_LEN);
           break;
       case SIMPLEGATTPROFILE_CHAR5_UUID:
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage+17,pValue,SIMPLEGATTPROFILE_CHAR5_LEN);
           break;
       case SIMPLEGATTPROFILE_CHAR6_UUID:
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage+19,pValue,SIMPLEGATTPROFILE_CHAR6_LEN);
           break;
       case SIMPLEGATTPROFILE_CHAR7_UUID:
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage+21,pValue,SIMPLEGATTPROFILE_CHAR7_LEN);
           break;
       case SIMPLEGATTPROFILE_CHAR8_UUID:
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage+23,pValue,SIMPLEGATTPROFILE_CHAR8_LEN);
           break;
       case SIMPLEGATTPROFILE_CHAR9_UUID:
-          memcpy(storage+31,pValue,len);
-          storage[45]=len;
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
+          {
+              memcpy(storage+31,pValue,len);
+              storage[45]=len;
+          }
           break;
       case SIMPLEGATTPROFILE_CHAR10_UUID:
+          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage+22,pValue,SIMPLEGATTPROFILE_CHAR10_LEN);
           break;
 
