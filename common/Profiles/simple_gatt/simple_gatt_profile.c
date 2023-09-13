@@ -80,6 +80,9 @@ GATT_BT_UUID(simpleGattProfile_char9UUID, SIMPLEGATTPROFILE_CHAR9_UUID);
 // Characteristic 10 UUID: 0xFF60
 GATT_BT_UUID(simpleGattProfile_char10UUID, SIMPLEGATTPROFILE_CHAR10_UUID);
 
+
+GATT_BT_UUID(passwordGattProfile_ServUUID, PASSWORD_VERIFICATION_SERV_UUID);
+GATT_BT_UUID(passwordGattProfile_char1UUID, 0xeee1);
 /*********************************************************************
  * EXTERNAL VARIABLES
  */
@@ -132,6 +135,10 @@ static uint8 simpleGattProfile_Char9[SIMPLEGATTPROFILE_CHAR9_LEN] = {0};
 static uint8 simpleGattProfile_Char10Props = GATT_PROP_READ | GATT_PROP_WRITE;
 static uint8 simpleGattProfile_Char10[SIMPLEGATTPROFILE_CHAR10_LEN] = {0};
 
+
+static CONST gattAttrType_t passwordGattProfile_Service = { ATT_BT_UUID_SIZE, passwordGattProfile_ServUUID };
+static uint8 passwordGattProfile_Char1Props = GATT_PROP_READ | GATT_PROP_WRITE;
+static uint8 passwordGattProfile_Char1[18] = {0};
 /*********************************************************************
  * Profile Attributes - Table
  */
@@ -192,6 +199,9 @@ static gattAttribute_t simpleGattProfile_attrTbl[] =
    // Characteristic Value 10
    GATT_BT_ATT( simpleGattProfile_char10UUID, GATT_PERMIT_READ | GATT_PERMIT_WRITE,  simpleGattProfile_Char10 ),
 
+   GATT_BT_ATT( primaryServiceUUID,           GATT_PERMIT_READ,                      (uint8 *) &passwordGattProfile_Service ),
+   GATT_BT_ATT( characterUUID,                GATT_PERMIT_READ,                      &passwordGattProfile_Char1Props ),
+   GATT_BT_ATT( passwordGattProfile_char1UUID,  GATT_PERMIT_READ | GATT_PERMIT_WRITE,  passwordGattProfile_Char1 ),
 };
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -415,6 +425,11 @@ bStatus_t SimpleGattProfile_readAttrCB(uint16_t connHandle,
             memcpy(pValue,storage+22,SIMPLEGATTPROFILE_CHAR10_LEN);
             break;
 
+        case 0xeee1:
+            *pLen = 18;
+            memcpy(pValue,passwordGattProfile_Char1,18);
+            break;
+
       default:
         // Should never get here! (characteristics 3 and 4 do not have read permissions)
         *pLen = 0;
@@ -457,6 +472,12 @@ bStatus_t SimpleGattProfile_writeAttrCB( uint16_t connHandle,
 
   if ( pAttr->type.len == ATT_BT_UUID_SIZE )
   {
+
+      uint8 xor_int;
+      uint8 w_data[18];
+      uint8 xor_end[8];
+      uint8 key[8];
+
     // 16-bit UUID
     uint16 uuid = BUILD_UINT16( pAttr->type.uuid[0], pAttr->type.uuid[1]);
     switch ( uuid )
@@ -502,6 +523,39 @@ bStatus_t SimpleGattProfile_writeAttrCB( uint16_t connHandle,
       case SIMPLEGATTPROFILE_CHAR10_UUID:
           if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
           memcpy(storage+22,pValue,SIMPLEGATTPROFILE_CHAR10_LEN);
+          break;
+
+      case 0xeee1:
+
+          memcpy(w_data,pValue,18);
+          xor_int = w_data[16] + w_data[17];
+
+          xor_end[0] = w_data[0]+xor_int;
+          xor_end[1] = w_data[1]+xor_int;
+          xor_end[2] = w_data[2]+xor_int;
+          xor_end[3] = w_data[3]+xor_int;
+          xor_end[4] = w_data[8]+xor_int;
+          xor_end[5] = w_data[9]+xor_int;
+          xor_end[6] = w_data[10]+xor_int;
+          xor_end[7] = w_data[11]+xor_int;
+
+          key[0] = xor_end[0]^w_data[4];
+          key[1] = xor_end[1]^w_data[5];
+          key[2] = xor_end[2]^w_data[6];
+          key[3] = xor_end[3]^w_data[7];
+          key[4] = xor_end[4]^w_data[12];
+          key[5] = xor_end[5]^w_data[13];
+          key[6] = xor_end[6]^w_data[14];
+          key[7] = xor_end[7]^w_data[15];
+
+          if(memcmp(key,storage+23,8) == 0)
+          {
+              memset(passwordGattProfile_Char1,0x55,18);
+          }
+          else
+          {
+              memset(passwordGattProfile_Char1,0xaa,18);
+          }
           break;
 
       default:

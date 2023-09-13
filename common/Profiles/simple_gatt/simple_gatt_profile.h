@@ -39,6 +39,7 @@ extern "C"
 
 // Simple Profile Service UUID
 #define SIMPLEGATTPROFILE_SERV_UUID               0xFFF0
+#define PASSWORD_VERIFICATION_SERV_UUID           0xEEE0
 
 // Key Pressed UUID
 #define SIMPLEGATTPROFILE_CHAR1_UUID            0xFFF1

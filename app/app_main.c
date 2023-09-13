@@ -103,7 +103,7 @@ typedef enum
 #define FLASH_MINOR                         0x00, 0x01,
 #define FLASH_ADVINT                        ADV_INT_300MS,
 #define FLASH_RXP                           0xc5,
-#define FLASH_PASSWORD                      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+#define FLASH_PASSWORD                      '0','0','0','0','0','0','0','0',
 #define FLASH_NAME                          'B','e','e','L','i','n','k','e','r','0','0','0','0','0',
 #define FLASH_NAMELEN                       9
 
