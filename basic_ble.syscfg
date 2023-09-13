@@ -28,6 +28,8 @@ const NVS1        = NVS.addInstance();
 const Power       = scripting.addModule("/ti/drivers/Power");
 const RNG         = scripting.addModule("/ti/drivers/RNG");
 const RNG1        = RNG.addInstance();
+const Watchdog    = scripting.addModule("/ti/drivers/Watchdog", {}, false);
+const Watchdog1   = Watchdog.addInstance();
 const Button      = scripting.addModule("/ti/drivers/apps/Button", {}, false);
 const Button1     = Button.addInstance();
 const Button2     = Button.addInstance();
@@ -86,6 +88,9 @@ NVS1.internalFlash.regionBase = 0x7C000;
 NVS1.internalFlash.regionSize = 0x4000;
 
 RNG1.$name = "CONFIG_RNG_0";
+
+Watchdog1.$name  = "CONFIG_WATCHDOG_0";
+Watchdog1.period = 4000;
 
 Button1.$name     = "CONFIG_BUTTON_0";
 Button1.$hardware = system.deviceData.board.components["BTN-1"];

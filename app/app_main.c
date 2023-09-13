@@ -27,6 +27,7 @@ $Release Date: PACKAGE RELEASE DATE $
 #include <string.h>
 #include <FreeRTOS.h>
 #include <timers.h>
+#include <ti\drivers\Watchdog.h>
 
 //*****************************************************************************
 //! Defines
@@ -120,7 +121,10 @@ uint16 adv_interval;
 uint16 battery_vol;
 int8 tx_power;
 
+Watchdog_Handle watchdogHandle;
+
 TimerHandle_t resetTimer;
+TimerHandle_t watchDogTimer;
 //*****************************************************************************
 //! Functions
 //*****************************************************************************
@@ -228,6 +232,21 @@ static uint16_t get_adv_int(uint8_t index)
     return (m_adv_int*1000/625);
 }
 
+void mwatchdog_init(void)
+{
+    Watchdog_Params wp;
+    Watchdog_init();
+    Watchdog_Params_init(&wp);
+    wp.resetMode = Watchdog_RESET_ON;
+    wp.debugStallMode = Watchdog_DEBUG_STALL_ON;
+
+    watchdogHandle = Watchdog_open(0, &wp);
+    if (watchdogHandle == NULL) {
+        // Spin forever
+        while(1);
+    }
+}
+
 void set_param(void)
 {
     memcpy(madvData+9,storage,16);              //adv uuid
@@ -278,6 +297,10 @@ void resetTimerCallback( TimerHandle_t xTimer )
     SystemReset();
 }
 
+void watchDogTimerCallback( TimerHandle_t xTimer )
+{
+    Watchdog_clear(watchdogHandle);
+}
 /*********************************************************************
  * @fn      App_StackInitDone
  *
@@ -291,6 +314,8 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
 {
     bStatus_t status = SUCCESS;
 
+    mwatchdog_init();
+
     status = osal_snv_read(SNV_ID_APP, FLASH_LEN, (uint8 *)storage);
     if(status != SUCCESS)
     {
@@ -302,6 +327,8 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
 
     resetTimer = xTimerCreate("Timer 1",pdMS_TO_TICKS( 1000*60*30 ),pdTRUE,( void * ) 1,&resetTimerCallback );
     xTimerStart(resetTimer,0);
+    watchDogTimer = xTimerCreate("Timer 2",pdMS_TO_TICKS( 1000*3 ),pdTRUE,( void * ) 2,&watchDogTimerCallback );
+    xTimerStart(watchDogTimer,0);
 
     // Menu
     Menu_start();
