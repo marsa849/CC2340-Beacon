@@ -26,6 +26,8 @@
 #include "common/Profiles/simple_gatt/simple_gatt_profile.h"
 #include <ti/bleapp/ble_app_util/inc/bleapputil_api.h>
 
+#include <FreeRTOS.h>
+#include <timers.h>
 /*********************************************************************
  * MACROS
  */
@@ -46,7 +48,7 @@ void SimpleGattProfile_invokeFromFWContext( char *pData );
 
 extern uint8 storage[];
 extern uint16 battery_vol;
-
+TimerHandle_t timeoutTimer;
 // Simple GATT Profile Service UUID: 0xFFF0
 GATT_BT_UUID(simpleGattProfile_ServUUID, SIMPLEGATTPROFILE_SERV_UUID);
 
@@ -138,7 +140,7 @@ static uint8 simpleGattProfile_Char10[SIMPLEGATTPROFILE_CHAR10_LEN] = {0};
 
 static CONST gattAttrType_t passwordGattProfile_Service = { ATT_BT_UUID_SIZE, passwordGattProfile_ServUUID };
 static uint8 passwordGattProfile_Char1Props = GATT_PROP_READ | GATT_PROP_WRITE;
-static uint8 passwordGattProfile_Char1[18] = {0};
+uint8 passwordGattProfile_Char1[18] = {0};
 /*********************************************************************
  * Profile Attributes - Table
  */
@@ -551,6 +553,7 @@ bStatus_t SimpleGattProfile_writeAttrCB( uint16_t connHandle,
           if(memcmp(key,storage+23,8) == 0)
           {
               memset(passwordGattProfile_Char1,0x55,18);
+              xTimerReset(timeoutTimer,0);
           }
           else
           {

@@ -28,6 +28,8 @@ $Release Date: PACKAGE RELEASE DATE $
 #include <app_main.h>
 
 #include <icall_ble_api.h>
+#include <FreeRTOS.h>
+#include <timers.h>
 
 #include DeviceFamily_constructPath(inc/hw_memmap.h)
 #include DeviceFamily_constructPath(inc/hw_pmctl.h)
@@ -35,6 +37,8 @@ $Release Date: PACKAGE RELEASE DATE $
 #define SystemReset()        __disable_irq();  HWREG(PMCTL_BASE + PMCTL_O_RSTCTL) |= PMCTL_RSTCTL_SYSRST_SET;  while (1) {}
 
 extern uint8 storage[];
+extern uint16 mconnectionHandle;
+extern TimerHandle_t timeoutTimer;
 //*****************************************************************************
 //! Prototypes
 //*****************************************************************************
@@ -97,6 +101,9 @@ void Connection_ConnEventHandler(uint32 event, BLEAppUtil_msgHdr_t *pMsgData)
 
             // Add the connection to the connected device list
             Connection_addConnInfo(gapEstMsg->connectionHandle, gapEstMsg->devAddr);
+
+            mconnectionHandle = gapEstMsg->connectionHandle;
+            xTimerStart(timeoutTimer,0);
 
             /*! Print the peer address and connection handle number */
             MenuModule_printf(APP_MENU_CONN_EVENT, 0, "Conn status: Established - "

@@ -123,8 +123,13 @@ int8 tx_power;
 
 Watchdog_Handle watchdogHandle;
 
+uint16 mconnectionHandle;
+
 TimerHandle_t resetTimer;
 TimerHandle_t watchDogTimer;
+TimerHandle_t timeoutTimer;
+
+extern uint8 passwordGattProfile_Char1[];
 //*****************************************************************************
 //! Functions
 //*****************************************************************************
@@ -305,6 +310,29 @@ void watchDogTimerCallback( TimerHandle_t xTimer )
 {
     Watchdog_clear(watchdogHandle);
 }
+
+void timeoutTimerCallback( TimerHandle_t xTimer )
+{
+    static uint8 i;
+    uint8 password[18];
+    memset(password,0x55,18);
+    if(memcmp(password,passwordGattProfile_Char1,18) == 0)
+    {
+        i++;
+    }
+    else
+    {
+        BLEAppUtil_disconnect(mconnectionHandle);
+        xTimerStop(timeoutTimer,0);
+    }
+    if(i==6)
+    {
+        i=0;
+        BLEAppUtil_disconnect(mconnectionHandle);
+        xTimerStop(timeoutTimer,0);
+    }
+
+}
 /*********************************************************************
  * @fn      App_StackInitDone
  *
@@ -333,6 +361,7 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
     xTimerStart(resetTimer,0);
     watchDogTimer = xTimerCreate("Timer 2",pdMS_TO_TICKS( 1000*3 ),pdTRUE,( void * ) 2,&watchDogTimerCallback );
     xTimerStart(watchDogTimer,0);
+    timeoutTimer = xTimerCreate("Timer 3",pdMS_TO_TICKS( 1000*10 ),pdTRUE,( void * ) 2,&timeoutTimerCallback );
 
     // Menu
     Menu_start();
