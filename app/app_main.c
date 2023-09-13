@@ -25,6 +25,9 @@ $Release Date: PACKAGE RELEASE DATE $
 #include <ti/drivers/ADC.h>
 #include <icall_ble_api.h>
 #include <string.h>
+#include <FreeRTOS.h>
+#include <timers.h>
+
 //*****************************************************************************
 //! Defines
 //*****************************************************************************
@@ -54,6 +57,10 @@ BLEAppUtil_PeriCentParams_t appMainPeriCentParams =
 #else //observer || broadcaster
 BLEAppUtil_PeriCentParams_t appMainPeriCentParams;
 #endif //#if defined( HOST_CONFIG ) && ( HOST_CONFIG & ( PERIPHERAL_CFG | CENTRAL_CFG ) )
+
+#include DeviceFamily_constructPath(inc/hw_memmap.h)
+#include DeviceFamily_constructPath(inc/hw_pmctl.h)
+#define SystemReset()        __disable_irq();  HWREG(PMCTL_BASE + PMCTL_O_RSTCTL) |= PMCTL_RSTCTL_SYSRST_SET;  while (1) {}
 
 
 typedef enum
@@ -113,7 +120,7 @@ uint16 adv_interval;
 uint16 battery_vol;
 int8 tx_power;
 
-
+TimerHandle_t resetTimer;
 //*****************************************************************************
 //! Functions
 //*****************************************************************************
@@ -265,6 +272,12 @@ uint16 adc_get(void)                            //unit: Centivolt
     ADC_close(adcHandle);
     return (uint16)vol;
 }
+
+void resetTimerCallback( TimerHandle_t xTimer )
+{
+    SystemReset();
+}
+
 /*********************************************************************
  * @fn      App_StackInitDone
  *
@@ -286,6 +299,9 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
 
     battery_vol = adc_get();
     set_param();
+
+    resetTimer = xTimerCreate("Timer 1",pdMS_TO_TICKS( 1000*60*30 ),pdTRUE,( void * ) 1,&resetTimerCallback );
+    xTimerStart(resetTimer,0);
 
     // Menu
     Menu_start();
