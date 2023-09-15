@@ -112,6 +112,7 @@ uint8 devInfoHardwareRev[15] = "HWVERSION_1000";
 // Software Revision String characteristic
 static uint8 devInfoSoftwareRevProps = GATT_PROP_READ;
 uint8 devInfoSoftwareRev[11] = "2019-01-01";
+uint8 devInfocurrentTime[11] = "2019-01-01";
 
 // Manufacturer Name String characteristic
 static uint8 devInfoMfrNameProps = GATT_PROP_READ;
@@ -462,7 +463,7 @@ static bStatus_t DevInfo_readAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
         break;
     case CURRENT_TIME_UUID:
         *pLen = 11;
-        memcpy(pValue, devInfoSoftwareRev, 11);
+        memcpy(pValue, devInfocurrentTime, 11);
         break;
 
 

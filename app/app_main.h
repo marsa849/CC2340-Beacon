@@ -27,6 +27,28 @@ $Release Date: PACKAGE RELEASE DATE $
 //*****************************************************************************
 //! Typedefs
 //*****************************************************************************
+
+typedef struct beacon_info
+{
+    uint8 uuid[16];
+    uint8 txpower;
+    uint8 major[2];
+    uint8 minor[2];
+    uint8 advint;
+    uint8 rxp;
+    uint8 password[8];
+    uint8 adv_name[14];
+    uint8 adv_name_len;
+}beacon_info;
+
+typedef struct flash_info{
+    beacon_info beacon;
+    uint8 mdate[10];
+    uint8 hwvr[4];
+    uint8 isConfigured;
+}flash_info;
+
+
 typedef enum
 {
     APP_MENU_GENERAL_STATUS_LINE,

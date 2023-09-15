@@ -132,7 +132,7 @@ void Connection_ConnEventHandler(uint32 event, BLEAppUtil_msgHdr_t *pMsgData)
                               "reason = " MENU_MODULE_COLOR_YELLOW "%d" MENU_MODULE_COLOR_RESET,
                               gapTermMsg->connectionHandle, gapTermMsg->reason);
 
-            osal_snv_write(0x100, 46, (uint8 *)storage);
+            osal_snv_write(0x100, 61, (uint8 *)storage);
 
             /*! Print the number of current connections */
             MenuModule_printf(APP_MENU_NUM_CONNS, 0, "Connections number: "

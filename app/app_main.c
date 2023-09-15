@@ -28,7 +28,11 @@ $Release Date: PACKAGE RELEASE DATE $
 #include <FreeRTOS.h>
 #include <timers.h>
 #include <ti\drivers\Watchdog.h>
+#include <ti/drivers/UART2.h>
 
+
+#include <ti/bleapp/ble_app_util/inc/bleapputil_internal.h>
+extern BLEAppUtil_TheardEntity_t BLEAppUtil_theardEntity;
 //*****************************************************************************
 //! Defines
 //*****************************************************************************
@@ -94,7 +98,7 @@ typedef enum
 
 #define SNV_ID_APP 0x100
 
-#define FLASH_LEN 46 // len store beacon param
+#define FLASH_LEN 61 // len store beacon param
 
 #define FLASH_UUID                          0xfd, 0xa5, 0x06, 0x93, 0xa4, 0xe2, 0x4f, 0xb1, \
                                             0xaf, 0xcf, 0xc6, 0xeb, 0x07, 0x64, 0x78, 0x25,
@@ -105,9 +109,14 @@ typedef enum
 #define FLASH_RXP                           0xc5,
 #define FLASH_PASSWORD                      '0','0','0','0','0','0','0','0',
 #define FLASH_NAME                          'B','e','e','L','i','n','k','e','r','0','0','0','0','0',
-#define FLASH_NAMELEN                       9
+#define FLASH_NAMELEN                       9,
 
-uint8 storage[FLASH_LEN] = {FLASH_UUID FLASH_TXPOWER FLASH_MAJOR FLASH_MINOR FLASH_ADVINT FLASH_RXP FLASH_PASSWORD FLASH_NAME FLASH_NAMELEN};
+#define FLASH_DATE                          '2','0','2','3','-','0','8','-','0','9',
+#define FLSH_HWVR                           '1','0','0','0',
+
+#define ISCONFIGURED                        0
+
+uint8 storage[FLASH_LEN] = {FLASH_UUID FLASH_TXPOWER FLASH_MAJOR FLASH_MINOR FLASH_ADVINT FLASH_RXP FLASH_PASSWORD FLASH_NAME FLASH_NAMELEN FLASH_DATE FLSH_HWVR ISCONFIGURED};
 
 uint8 madvData[30]={0x02,0x01,0x24,0x1a,0xff,
                     0x4c,0x00,0x02,0x15,
@@ -129,7 +138,15 @@ TimerHandle_t resetTimer;
 TimerHandle_t watchDogTimer;
 TimerHandle_t timeoutTimer;
 
+#define UART_SIZE   256
+UART2_Handle uart;
+uint8 uartReadBuffer[UART_SIZE];
+uint8 uartWriteBuffer[UART_SIZE];
+
+extern uint8 devInfocurrentTime[];
+extern uint8 devInfoHardwareRev[];
 extern uint8 passwordGattProfile_Char1[];
+extern BLEAppUtil_TheardEntity_t BLEAppUtil_theardEntity;
 //*****************************************************************************
 //! Functions
 //*****************************************************************************
@@ -273,6 +290,9 @@ void set_param(void)
     mrspData[14+storage[45]] = battery_vol%256;            //battery
     mrspData[15+storage[45]] = battery_vol/256;            //battery
     mrspData[16+storage[45]] = 0x16;            //temporary setting, device id
+
+    memcpy(devInfocurrentTime,storage+46,10);
+    memcpy(devInfoHardwareRev+10,storage+56,4);
 }
 
 uint16 adc_get(void)                            //unit: Centivolt
@@ -333,6 +353,37 @@ void timeoutTimerCallback( TimerHandle_t xTimer )
     }
 
 }
+
+uint8 testbuff1[]="sfadsaa";
+void UARTCallback(UART2_Handle handle, void *buffer, size_t count, void *userArg, int_fast16_t status)
+{
+    BLEAppUtil_enqueueMsg(0x55,testbuff1);
+    UART2_read(uart, &uartReadBuffer, UART_SIZE,0);
+}
+
+void UART_Init()
+{
+    UART2_Params uartParams;
+
+    /* Create a UART in CALLBACK read mode */
+    UART2_Params_init(&uartParams);
+    uartParams.readMode     = UART2_Mode_CALLBACK;
+    uartParams.readCallback = UARTCallback;
+    uartParams.baudRate     = 9600;
+    uartParams.readReturnMode = UART2_ReadReturnMode_PARTIAL;
+
+    uart = UART2_open(CONFIG_DISPLAY_UART, &uartParams);
+
+    if (uart == NULL)
+    {
+        /* UART2_open() failed */
+        while (1) {}
+    }
+    UART2_rxEnable(uart);
+    // Setup an initial read
+    UART2_read(uart, &uartReadBuffer, UART_SIZE,0);
+}
+
 /*********************************************************************
  * @fn      App_StackInitDone
  *
@@ -353,6 +404,8 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
     {
         osal_snv_write(SNV_ID_APP, FLASH_LEN, (uint8 *)storage);
     }
+    if(((flash_info *)storage)->isConfigured == 0)
+        UART_Init();
 
     battery_vol = adc_get();
     set_param();
@@ -364,7 +417,7 @@ void App_StackInitDoneHandler(gapDeviceInitDoneEvent_t *deviceInitDoneData)
     timeoutTimer = xTimerCreate("Timer 3",pdMS_TO_TICKS( 1000*10 ),pdTRUE,( void * ) 2,&timeoutTimerCallback );
 
     // Menu
-    Menu_start();
+    //Menu_start();
 
     // Print the device ID address
     MenuModule_printf(APP_MENU_DEVICE_ADDRESS, 0, "BLE ID Address: "
