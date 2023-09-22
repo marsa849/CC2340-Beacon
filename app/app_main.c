@@ -263,10 +263,6 @@ void mwatchdog_init(void)
     wp.debugStallMode = Watchdog_DEBUG_STALL_ON;
 
     watchdogHandle = Watchdog_open(0, &wp);
-    if (watchdogHandle == NULL) {
-        // Spin forever
-        while(1);
-    }
 }
 
 void set_param(void)

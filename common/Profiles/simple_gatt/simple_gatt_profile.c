@@ -49,6 +49,9 @@ void SimpleGattProfile_invokeFromFWContext( char *pData );
 extern uint8 storage[];
 extern uint16 battery_vol;
 TimerHandle_t timeoutTimer;
+static bool isAuthentic = false;
+bool isFlashChange = false;
+
 // Simple GATT Profile Service UUID: 0xFFF0
 GATT_BT_UUID(simpleGattProfile_ServUUID, SIMPLEGATTPROFILE_SERV_UUID);
 
@@ -482,90 +485,90 @@ bStatus_t SimpleGattProfile_writeAttrCB( uint16_t connHandle,
 
     // 16-bit UUID
     uint16 uuid = BUILD_UINT16( pAttr->type.uuid[0], pAttr->type.uuid[1]);
-    switch ( uuid )
+    if( uuid == SIMPLEGATTPROFILE_CHAR1_UUID)
     {
-      case SIMPLEGATTPROFILE_CHAR1_UUID:
-          if( pValue[0]==0xfe && pValue[1]==0x01)
-          {
-              simpleGattProfile_Char1[0]=0xfe;
-              simpleGattProfile_Char1[1]=0x02;
-          }
-          break;
-      case SIMPLEGATTPROFILE_CHAR2_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          memcpy(storage,pValue,SIMPLEGATTPROFILE_CHAR2_LEN);
-          break;
-      case SIMPLEGATTPROFILE_CHAR3_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          memcpy(storage+16,pValue,SIMPLEGATTPROFILE_CHAR3_LEN);
-          break;
-      case SIMPLEGATTPROFILE_CHAR5_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          memcpy(storage+17,pValue,SIMPLEGATTPROFILE_CHAR5_LEN);
-          break;
-      case SIMPLEGATTPROFILE_CHAR6_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          memcpy(storage+19,pValue,SIMPLEGATTPROFILE_CHAR6_LEN);
-          break;
-      case SIMPLEGATTPROFILE_CHAR7_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          memcpy(storage+21,pValue,SIMPLEGATTPROFILE_CHAR7_LEN);
-          break;
-      case SIMPLEGATTPROFILE_CHAR8_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          memcpy(storage+23,pValue,SIMPLEGATTPROFILE_CHAR8_LEN);
-          break;
-      case SIMPLEGATTPROFILE_CHAR9_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          {
-              memcpy(storage+31,pValue,len);
-              storage[45]=len;
-          }
-          break;
-      case SIMPLEGATTPROFILE_CHAR10_UUID:
-          if(simpleGattProfile_Char1[0]==0xfe && simpleGattProfile_Char1[1]==0x02)
-          memcpy(storage+22,pValue,SIMPLEGATTPROFILE_CHAR10_LEN);
-          break;
 
-      case 0xeee1:
+        if( pValue[0]==0xfe && pValue[1]==0x01)
+        {
+            simpleGattProfile_Char1[0]=0xfe;
+            simpleGattProfile_Char1[1]=0x02;
+            isAuthentic = true;
+        }
 
-          memcpy(w_data,pValue,18);
-          xor_int = w_data[16] + w_data[17];
-
-          xor_end[0] = w_data[0]+xor_int;
-          xor_end[1] = w_data[1]+xor_int;
-          xor_end[2] = w_data[2]+xor_int;
-          xor_end[3] = w_data[3]+xor_int;
-          xor_end[4] = w_data[8]+xor_int;
-          xor_end[5] = w_data[9]+xor_int;
-          xor_end[6] = w_data[10]+xor_int;
-          xor_end[7] = w_data[11]+xor_int;
-
-          key[0] = xor_end[0]^w_data[4];
-          key[1] = xor_end[1]^w_data[5];
-          key[2] = xor_end[2]^w_data[6];
-          key[3] = xor_end[3]^w_data[7];
-          key[4] = xor_end[4]^w_data[12];
-          key[5] = xor_end[5]^w_data[13];
-          key[6] = xor_end[6]^w_data[14];
-          key[7] = xor_end[7]^w_data[15];
-
-          if(memcmp(key,storage+23,8) == 0)
-          {
-              memset(passwordGattProfile_Char1,0x55,18);
-              xTimerReset(timeoutTimer,0);
-          }
-          else
-          {
-              memset(passwordGattProfile_Char1,0xaa,18);
-          }
-          break;
-
-      default:
-        // Should never get here! (characteristics 2 and 4 do not have write permissions)
-        status = ATT_ERR_ATTR_NOT_FOUND;
-        break;
     }
+    else if( uuid == 0xeee1)
+    {
+        memcpy(w_data,pValue,18);
+        xor_int = w_data[16] + w_data[17];
+
+        xor_end[0] = w_data[0]+xor_int;
+        xor_end[1] = w_data[1]+xor_int;
+        xor_end[2] = w_data[2]+xor_int;
+        xor_end[3] = w_data[3]+xor_int;
+        xor_end[4] = w_data[8]+xor_int;
+        xor_end[5] = w_data[9]+xor_int;
+        xor_end[6] = w_data[10]+xor_int;
+        xor_end[7] = w_data[11]+xor_int;
+
+        key[0] = xor_end[0]^w_data[4];
+        key[1] = xor_end[1]^w_data[5];
+        key[2] = xor_end[2]^w_data[6];
+        key[3] = xor_end[3]^w_data[7];
+        key[4] = xor_end[4]^w_data[12];
+        key[5] = xor_end[5]^w_data[13];
+        key[6] = xor_end[6]^w_data[14];
+        key[7] = xor_end[7]^w_data[15];
+
+        if(memcmp(key,storage+23,8) == 0)
+        {
+            memset(passwordGattProfile_Char1,0x55,18);
+            xTimerReset(timeoutTimer,0);
+        }
+        else
+        {
+            memset(passwordGattProfile_Char1,0xaa,18);
+        }
+
+    }
+    else if( isAuthentic == true)
+    {
+        isFlashChange = true;
+        switch ( uuid )
+        {
+
+          case SIMPLEGATTPROFILE_CHAR2_UUID:
+              memcpy(storage,pValue,SIMPLEGATTPROFILE_CHAR2_LEN);
+              break;
+          case SIMPLEGATTPROFILE_CHAR3_UUID:
+              memcpy(storage+16,pValue,SIMPLEGATTPROFILE_CHAR3_LEN);
+              break;
+          case SIMPLEGATTPROFILE_CHAR5_UUID:
+              memcpy(storage+17,pValue,SIMPLEGATTPROFILE_CHAR5_LEN);
+              break;
+          case SIMPLEGATTPROFILE_CHAR6_UUID:
+              memcpy(storage+19,pValue,SIMPLEGATTPROFILE_CHAR6_LEN);
+              break;
+          case SIMPLEGATTPROFILE_CHAR7_UUID:
+              memcpy(storage+21,pValue,SIMPLEGATTPROFILE_CHAR7_LEN);
+              break;
+          case SIMPLEGATTPROFILE_CHAR8_UUID:
+              memcpy(storage+23,pValue,SIMPLEGATTPROFILE_CHAR8_LEN);
+              break;
+          case SIMPLEGATTPROFILE_CHAR9_UUID:
+                  memcpy(storage+31,pValue,len);
+                  storage[45]=len;
+              break;
+          case SIMPLEGATTPROFILE_CHAR10_UUID:
+              memcpy(storage+22,pValue,SIMPLEGATTPROFILE_CHAR10_LEN);
+              break;
+
+          default:
+            // Should never get here! (characteristics 2 and 4 do not have write permissions)
+            status = ATT_ERR_ATTR_NOT_FOUND;
+            break;
+        }
+    }
+
   }
   else
   {
